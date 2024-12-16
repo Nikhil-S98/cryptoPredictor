@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../style/style.css">
+        <title>Ethereum Price Prediction</title>
+    </head>
+    <body style="display: flex; ; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; background-color: rgb(204, 204, 243);">
+        <h1>Ethereum Price Prediction</h1>
+        <button id="predict-btn">Predict Tomorrow's Price</button>
+        <p id="result"></p>
+
+        <script>
+            document.getElementById('predict-btn').addEventListener('click', () => {
+                fetch('/predict')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('result').innerHTML = `
+                            <p>Today's Price: ${data.today_price}</p>
+                            <p>Ethereum's price is predicted to go <strong>${data.direction}</strong>.</p>
+                        `;
+                    });
+            });
+        </script>
+    </body>
+</html>

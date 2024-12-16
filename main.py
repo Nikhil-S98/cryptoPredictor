@@ -79,7 +79,7 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 # early stopping
 early_stopping = EarlyStopping(
     monitor='val_loss',
-    patience=10,
+    patience=3,
     restore_best_weights=True
 )
 
@@ -92,6 +92,9 @@ history = model.fit(
     callbacks=[early_stopping],
     shuffle=False
 )
+
+# save model
+model.save("models/lstm_model.keras")
 
 # evaluate model
 predictions = model.predict(X_test)
@@ -123,3 +126,30 @@ plt.xlabel("Time")
 plt.ylabel("Price (USD)")
 plt.legend()
 plt.show()
+
+#next day's price
+def predict_tomorrow(model, recent_data, scaler):
+    """
+    Predict if Ethereum's price will go up or down tomorrow.
+    """
+    # use the last 60 days as input
+    last_sequence = recent_data[-60:]  # Last 60 days of scaled data
+    last_sequence = np.expand_dims(last_sequence, axis=0)  # Reshape for LSTM input
+
+    # predict the next day's price
+    predicted_price_scaled = model.predict(last_sequence)[0][0]
+
+    # reverse scaling for predicted price
+    predicted_price = scaler.inverse_transform(
+        np.hstack([[predicted_price_scaled], [0], [0], [0], [0], [0]]).reshape(1, -1)
+    )[0][0]
+
+    # get today's actual price
+    today_price = scaler.inverse_transform(
+        np.hstack([recent_data[-1][0], 0, 0, 0, 0, 0]).reshape(1, -1)
+    )[0][0]
+
+    # determine if the price will go up or down
+    direction = "up" if predicted_price > today_price else "down"
+
+    return direction, today_price, predicted_price
